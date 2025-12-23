@@ -153,208 +153,67 @@ Para dudas adicionales, contacte al equipo de soporte SAP.
         }
 
         // ⭐ FUNCIÓN PRINCIPAL DE EXPORTACIÓN CORREGIDA
-        function exportToPDF() {
-            showStatus('Generando PDF...', 'success');
-            
-            const content = document.getElementById('chatResponse').innerHTML;
-            
-            // Crear contenedor para el PDF
-            const pdfContainer = document.createElement('div');
-            pdfContainer.id = 'pdf-export-container';
-            
-            pdfContainer.innerHTML = `
-                <div style="
-                    width: 100%;
-                    padding: 0;
-                    margin: 0;
-                    font-family: 'Segoe UI', Arial, sans-serif;
-                    color: #333;
-                    background: white;
-                    box-sizing: border-box;
-                ">
-                    <!-- ENCABEZADO -->
-                    <table style="width: 100%; border: none; margin-bottom: 15px;">
-                        <tr>
-                            <td style="border: none; padding: 0; text-align: left;">
-                                <span style="font-weight: bold; color: #003366; font-size: 16px;">
-                                    GRUPO PORTLAND - Soporte SAP
-                                </span>
-                            </td>
-                            <td style="border: none; padding: 0; text-align: right;">
-                                <span style="font-size: 10px; color: #666;">
-                                    ${new Date().toLocaleDateString('es-ES', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                    })}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                    <div style="border-bottom: 2px solid #003366; margin-bottom: 20px;"></div>
-                    
-                    <!-- ESTILOS INTERNOS -->
-                    <style>
-                        #pdf-export-container * {
-                            box-sizing: border-box !important;
-                        }
-                        #pdf-export-container table:not(:first-child) {
-                            width: 100% !important;
-                            border-collapse: collapse !important;
-                            margin: 15px 0 !important;
-                            table-layout: fixed !important;
-                        }
-                        #pdf-export-container th {
-                            background-color: #003366 !important;
-                            color: white !important;
-                            padding: 10px 8px !important;
-                            border: 1px solid #003366 !important;
-                            font-size: 11px !important;
-                            text-align: left !important;
-                            font-weight: bold !important;
-                        }
-                        #pdf-export-container td {
-                            padding: 8px !important;
-                            border: 1px solid #ddd !important;
-                            font-size: 10px !important;
-                            vertical-align: top !important;
-                            word-wrap: break-word !important;
-                        }
-                        #pdf-export-container tr:nth-child(even) td {
-                            background-color: #f8f9fa !important;
-                        }
-                        #pdf-export-container ul, 
-                        #pdf-export-container ol {
-                            margin: 10px 0 10px 25px !important;
-                            padding: 0 !important;
-                        }
-                        #pdf-export-container li {
-                            margin-bottom: 8px !important;
-                            font-size: 11px !important;
-                            line-height: 1.5 !important;
-                        }
-                        #pdf-export-container h1 {
-                            color: #003366 !important;
-                            font-size: 18px !important;
-                            margin: 0 0 15px 0 !important;
-                            border-bottom: 1px solid #eee !important;
-                            padding-bottom: 10px !important;
-                        }
-                        #pdf-export-container h2 {
-                            color: #003366 !important;
-                            font-size: 14px !important;
-                            margin: 20px 0 10px 0 !important;
-                        }
-                        #pdf-export-container h3 {
-                            color: #003366 !important;
-                            font-size: 12px !important;
-                            margin: 15px 0 8px 0 !important;
-                        }
-                        #pdf-export-container p {
-                            font-size: 11px !important;
-                            line-height: 1.6 !important;
-                            margin: 0 0 10px 0 !important;
-                            text-align: justify !important;
-                        }
-                        #pdf-export-container blockquote {
-                            background: #f0f7ff !important;
-                            border-left: 4px solid #003366 !important;
-                            margin: 15px 0 !important;
-                            padding: 10px 15px !important;
-                            font-size: 11px !important;
-                        }
-                        #pdf-export-container code {
-                            background: #f5f5f5 !important;
-                            padding: 2px 6px !important;
-                            border-radius: 3px !important;
-                            font-size: 10px !important;
-                        }
-                        #pdf-export-container strong {
-                            color: #003366 !important;
-                        }
-                    </style>
+    function exportToPDF() {
+    showStatus('Generando PDF...', 'success');
+    
+    const content = document.getElementById('chatResponse').innerHTML;
+    const pdfContainer = document.createElement('div');
+    pdfContainer.id = 'pdf-export-container';
+    
+    // Inyectamos el contenido (mantén tus estilos, pero asegúrate de que el div padre tenga ancho)
+    pdfContainer.innerHTML = `
+        <div style="width: 180mm; background: white; font-family: Arial, sans-serif;">
+            ${content}
+        </div>
+    `;
 
-                    <!-- CONTENIDO -->
-                    <div style="width: 100%;">
-                        ${content}
-                    </div>
-                    
-                    <!-- PIE DE PÁGINA -->
-                    <div style="
-                        margin-top: 30px;
-                        border-top: 1px solid #ddd;
-                        padding-top: 10px;
-                        text-align: center;
-                    ">
-                        <span style="font-size: 8px; color: #999;">
-                            Documento confidencial - Grupo Portland © ${new Date().getFullYear()}
-                        </span>
-                    </div>
-                </div>
-            `;
+    // Posicionamiento invisible pero "presente" para el navegador
+    pdfContainer.style.position = 'fixed';
+    pdfContainer.style.left = '0';
+    pdfContainer.style.top = '0';
+    pdfContainer.style.width = '210mm';
+    pdfContainer.style.zIndex = '-1000';
+    pdfContainer.style.backgroundColor = 'white';
+    
+    document.body.appendChild(pdfContainer);
 
-            // ⭐ IMPORTANTE: Agregar al DOM con estilos específicos
-            pdfContainer.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: 0;
-                width: 210mm;
-                min-height: 297mm;
-                background: white;
-                padding: 15mm;
-                box-sizing: border-box;
-            `;
-            document.body.appendChild(pdfContainer);
+    const options = {
+        margin: 10,
+        filename: 'Proceso_SAP_Portland.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            // Importante: asegurar que el scroll no afecte la captura
+            scrollY: 0,
+            scrollX: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-            // Configuración de html2pdf
-            const options = {
-                margin: [10, 10, 10, 10],
-                filename: 'Proceso_SAP_Portland.pdf',
-                image: { 
-                    type: 'jpeg', 
-                    quality: 0.98 
-                },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true,
-                    allowTaint: true,
-                    scrollX: 0,
-                    scrollY: 0
-                },
-                jsPDF: {
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait',
-                    compress: true
-                },
-                pagebreak: {
-                    mode: ['avoid-all', 'css', 'legacy'],
-                    avoid: ['tr', 'td', 'li', 'h1', 'h2', 'h3']
-                }
-            };
-
-            // Pequeño delay para asegurar renderizado
-            setTimeout(() => {
-                html2pdf()
-                    .set(options)
-                    .from(pdfContainer)
-                    .save()
-                    .then(() => {
-                        document.body.removeChild(pdfContainer);
-                        showStatus('✅ PDF generado correctamente', 'success');
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                        document.body.removeChild(pdfContainer);
-                        showStatus('❌ Error: ' + error.message, 'error');
-                    });
-            }, 200);
-        }
+    // Usar promesas encadenadas para asegurar la limpieza
+    setTimeout(() => {
+        html2pdf()
+            .set(options)
+            .from(pdfContainer)
+            .toPdf() // Paso intermedio para asegurar procesamiento
+            .save()
+            .then(() => {
+                pdfContainer.remove();
+                showStatus('✅ PDF generado correctamente', 'success');
+            })
+            .catch(err => {
+                console.error(err);
+                pdfContainer.remove();
+                showStatus('❌ Error al generar', 'error');
+            });
+    }, 500); // Un margen de 500ms es más seguro
+}
 
         // Iniciar cuando cargue la página
         window.onload = initLibraries;
     </script>
 </body>
+
 </html>
