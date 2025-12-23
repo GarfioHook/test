@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exportar PDF - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #chatResponse {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #003366;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #004488;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Exportación a PDF</h1>
+    
+    <div id="chatResponse">
+        <p>Cargando contenido de prueba...</p>
+    </div>
+    
+    <button onclick="exportToPDF()">📄 Exportar a PDF</button>
+    <div id="status"></div>
+
+    <!-- Cargar librerías desde CDN alternativo o con fallback -->
+    <script>
+        // Función para cargar scripts con fallback
+        function loadScript(url, fallbackUrl) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = resolve;
+                script.onerror = () => {
+                    if (fallbackUrl) {
+                        console.warn('CDN principal falló, intentando alternativo...');
+                        const fallback = document.createElement('script');
+                        fallback.src = fallbackUrl;
+                        fallback.onload = resolve;
+                        fallback.onerror = reject;
+                        document.head.appendChild(fallback);
+                    } else {
+                        reject(new Error('No se pudo cargar: ' + url));
+                    }
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Cargar librerías
+        async function initLibraries() {
+            try {
+                // Marked.js
+                await loadScript(
+                    'https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js',
+                    'https://unpkg.com/marked@9.1.6/marked.min.js'
+                );
+                
+                // html2pdf.js
+                await loadScript(
+                    'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+                    'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js'
+                );
+                
+                console.log('✅ Librerías cargadas correctamente');
+                showStatus('Librerías cargadas correctamente', 'success');
+                loadTestContent();
+                
+            } catch (error) {
+                console.error('❌ Error cargando librerías:', error);
+                showStatus('Error cargando librerías. Ver consola.', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
+
+        // Contenido de prueba (simula respuesta del chatbot)
+        function loadTestContent() {
+            const testMarkdown = `
+# Proceso de Creación de Orden de Compra en SAP
+
+## Descripción General
+Este documento describe el proceso paso a paso para crear una orden de compra en el sistema SAP.
+
+## Pasos a Seguir
+
+1. **Acceder a la transacción ME21N**
+   - Ingrese al sistema SAP con sus credenciales
+   - En la barra de comandos, escriba ME21N y presione Enter
+
+2. **Completar datos del proveedor**
+   - Seleccione el proveedor del listado
+   - Verifique los datos de contacto
+
+3. **Agregar materiales**
+   - Ingrese el código del material
+   - Especifique la cantidad requerida
+   - Confirme el precio unitario
+
+## Tabla de Códigos de Transacción
+
+| Código | Descripción | Módulo |
+|--------|-------------|--------|
+| ME21N | Crear Orden de Compra | MM |
+| ME22N | Modificar Orden de Compra | MM |
+| ME23N | Visualizar Orden de Compra | MM |
+| MIGO | Movimiento de Mercancías | MM |
+| MIRO | Registro de Facturas | MM |
+
+## Notas Importantes
+
+- Siempre verificar el presupuesto disponible antes de crear la orden
+- Las órdenes mayores a $10,000 requieren aprobación adicional
+- El sistema genera automáticamente el número de documento
+
+> **Tip:** Puede usar la transacción ME5A para ver el historial de órdenes.
+
+## Contacto de Soporte
+Para dudas adicionales, contacte al equipo de soporte SAP.
+            `;
+            
+            document.getElementById('chatResponse').innerHTML = marked.parse(testMarkdown);
+        }
+
+        // ⭐ FUNCIÓN PRINCIPAL DE EXPORTACIÓN CORREGIDA
+        function exportToPDF() {
+            showStatus('Generando PDF...', 'success');
+            
+            const content = document.getElementById('chatResponse').innerHTML;
+            
+            // Crear contenedor para el PDF
+            const pdfContainer = document.createElement('div');
+            pdfContainer.id = 'pdf-export-container';
+            
+            pdfContainer.innerHTML = `
+                <div style="
+                    width: 100%;
+                    padding: 0;
+                    margin: 0;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    color: #333;
+                    background: white;
+                    box-sizing: border-box;
+                ">
+                    <!-- ENCABEZADO -->
+                    <table style="width: 100%; border: none; margin-bottom: 15px;">
+                        <tr>
+                            <td style="border: none; padding: 0; text-align: left;">
+                                <span style="font-weight: bold; color: #003366; font-size: 16px;">
+                                    GRUPO PORTLAND - Soporte SAP
+                                </span>
+                            </td>
+                            <td style="border: none; padding: 0; text-align: right;">
+                                <span style="font-size: 10px; color: #666;">
+                                    ${new Date().toLocaleDateString('es-ES', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                    })}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="border-bottom: 2px solid #003366; margin-bottom: 20px;"></div>
+                    
+                    <!-- ESTILOS INTERNOS -->
+                    <style>
+                        #pdf-export-container * {
+                            box-sizing: border-box !important;
+                        }
+                        #pdf-export-container table:not(:first-child) {
+                            width: 100% !important;
+                            border-collapse: collapse !important;
+                            margin: 15px 0 !important;
+                            table-layout: fixed !important;
+                        }
+                        #pdf-export-container th {
+                            background-color: #003366 !important;
+                            color: white !important;
+                            padding: 10px 8px !important;
+                            border: 1px solid #003366 !important;
+                            font-size: 11px !important;
+                            text-align: left !important;
+                            font-weight: bold !important;
+                        }
+                        #pdf-export-container td {
+                            padding: 8px !important;
+                            border: 1px solid #ddd !important;
+                            font-size: 10px !important;
+                            vertical-align: top !important;
+                            word-wrap: break-word !important;
+                        }
+                        #pdf-export-container tr:nth-child(even) td {
+                            background-color: #f8f9fa !important;
+                        }
+                        #pdf-export-container ul, 
+                        #pdf-export-container ol {
+                            margin: 10px 0 10px 25px !important;
+                            padding: 0 !important;
+                        }
+                        #pdf-export-container li {
+                            margin-bottom: 8px !important;
+                            font-size: 11px !important;
+                            line-height: 1.5 !important;
+                        }
+                        #pdf-export-container h1 {
+                            color: #003366 !important;
+                            font-size: 18px !important;
+                            margin: 0 0 15px 0 !important;
+                            border-bottom: 1px solid #eee !important;
+                            padding-bottom: 10px !important;
+                        }
+                        #pdf-export-container h2 {
+                            color: #003366 !important;
+                            font-size: 14px !important;
+                            margin: 20px 0 10px 0 !important;
+                        }
+                        #pdf-export-container h3 {
+                            color: #003366 !important;
+                            font-size: 12px !important;
+                            margin: 15px 0 8px 0 !important;
+                        }
+                        #pdf-export-container p {
+                            font-size: 11px !important;
+                            line-height: 1.6 !important;
+                            margin: 0 0 10px 0 !important;
+                            text-align: justify !important;
+                        }
+                        #pdf-export-container blockquote {
+                            background: #f0f7ff !important;
+                            border-left: 4px solid #003366 !important;
+                            margin: 15px 0 !important;
+                            padding: 10px 15px !important;
+                            font-size: 11px !important;
+                        }
+                        #pdf-export-container code {
+                            background: #f5f5f5 !important;
+                            padding: 2px 6px !important;
+                            border-radius: 3px !important;
+                            font-size: 10px !important;
+                        }
+                        #pdf-export-container strong {
+                            color: #003366 !important;
+                        }
+                    </style>
+
+                    <!-- CONTENIDO -->
+                    <div style="width: 100%;">
+                        ${content}
+                    </div>
+                    
+                    <!-- PIE DE PÁGINA -->
+                    <div style="
+                        margin-top: 30px;
+                        border-top: 1px solid #ddd;
+                        padding-top: 10px;
+                        text-align: center;
+                    ">
+                        <span style="font-size: 8px; color: #999;">
+                            Documento confidencial - Grupo Portland © ${new Date().getFullYear()}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // ⭐ IMPORTANTE: Agregar al DOM con estilos específicos
+            pdfContainer.style.cssText = `
+                position: absolute;
+                left: -9999px;
+                top: 0;
+                width: 210mm;
+                min-height: 297mm;
+                background: white;
+                padding: 15mm;
+                box-sizing: border-box;
+            `;
+            document.body.appendChild(pdfContainer);
+
+            // Configuración de html2pdf
+            const options = {
+                margin: [10, 10, 10, 10],
+                filename: 'Proceso_SAP_Portland.pdf',
+                image: { 
+                    type: 'jpeg', 
+                    quality: 0.98 
+                },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true,
+                    allowTaint: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait',
+                    compress: true
+                },
+                pagebreak: {
+                    mode: ['avoid-all', 'css', 'legacy'],
+                    avoid: ['tr', 'td', 'li', 'h1', 'h2', 'h3']
+                }
+            };
+
+            // Pequeño delay para asegurar renderizado
+            setTimeout(() => {
+                html2pdf()
+                    .set(options)
+                    .from(pdfContainer)
+                    .save()
+                    .then(() => {
+                        document.body.removeChild(pdfContainer);
+                        showStatus('✅ PDF generado correctamente', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        document.body.removeChild(pdfContainer);
+                        showStatus('❌ Error: ' + error.message, 'error');
+                    });
+            }, 200);
+        }
+
+        // Iniciar cuando cargue la página
+        window.onload = initLibraries;
+    </script>
+</body>
+</html>
