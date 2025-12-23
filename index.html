@@ -157,58 +157,90 @@ Para dudas adicionales, contacte al equipo de soporte SAP.
     showStatus('Generando PDF...', 'success');
     
     const content = document.getElementById('chatResponse').innerHTML;
+    
+    // Crear contenedor para el PDF
     const pdfContainer = document.createElement('div');
     pdfContainer.id = 'pdf-export-container';
     
-    // Inyectamos el contenido (mantén tus estilos, pero asegúrate de que el div padre tenga ancho)
+    // Aplicamos estilos base al contenedor para que no sea visible pero sí renderizable
+    pdfContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 210mm; 
+        background: white;
+        z-index: -9999;
+        opacity: 0;
+        pointer-events: none;
+    `;
+    
     pdfContainer.innerHTML = `
-        <div style="width: 180mm; background: white; font-family: Arial, sans-serif;">
-            ${content}
+        <div style="padding: 15mm; width: 180mm; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr>
+                    <td style="text-align: left; vertical-align: bottom;">
+                        <span style="font-weight: bold; color: #003366; font-size: 16px;">
+                            GRUPO PORTLAND - Soporte SAP
+                        </span>
+                    </td>
+                    <td style="text-align: right; vertical-align: bottom;">
+                        <span style="font-size: 10px; color: #666;">
+                            ${new Date().toLocaleDateString('es-ES', { 
+                                year: 'numeric', month: 'long', day: 'numeric' 
+                            })}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+            <div style="border-bottom: 2px solid #003366; margin-bottom: 20px;"></div>
+            
+            <style>
+                #pdf-export-container table { width: 100% !important; border-collapse: collapse !important; margin: 15px 0 !important; }
+                #pdf-export-container th { background-color: #003366 !important; color: white !important; padding: 8px !important; border: 1px solid #003366 !important; font-size: 11px !important; }
+                #pdf-export-container td { padding: 8px !important; border: 1px solid #ddd !important; font-size: 10px !important; }
+                #pdf-export-container h1 { color: #003366 !important; font-size: 18px !important; }
+                #pdf-export-container p, #pdf-export-container li { font-size: 11px !important; line-height: 1.5 !important; }
+                #pdf-export-container blockquote { border-left: 4px solid #003366 !important; background: #f9f9f9 !important; padding: 10px !important; }
+            </style>
+
+            <div style="width: 100%;">
+                ${content}
+            </div>
         </div>
     `;
 
-    // Posicionamiento invisible pero "presente" para el navegador
-    pdfContainer.style.position = 'fixed';
-    pdfContainer.style.left = '0';
-    pdfContainer.style.top = '0';
-    pdfContainer.style.width = '210mm';
-    pdfContainer.style.zIndex = '-1000';
-    pdfContainer.style.backgroundColor = 'white';
-    
     document.body.appendChild(pdfContainer);
 
     const options = {
-        margin: 10,
+        margin: 0, // El margen ya lo pusimos en el padding del div interno
         filename: 'Proceso_SAP_Portland.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
             scale: 2,
             useCORS: true,
-            letterRendering: true,
-            // Importante: asegurar que el scroll no afecte la captura
-            scrollY: 0,
-            scrollX: 0
+            logging: false,
+            letterRendering: true
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Usar promesas encadenadas para asegurar la limpieza
+    // Pausa ligeramente más larga (500ms) para asegurar que el navegador 
+    // procese el CSS inyectado y el contenido de Marked
     setTimeout(() => {
         html2pdf()
             .set(options)
             .from(pdfContainer)
-            .toPdf() // Paso intermedio para asegurar procesamiento
             .save()
             .then(() => {
-                pdfContainer.remove();
+                document.body.removeChild(pdfContainer);
                 showStatus('✅ PDF generado correctamente', 'success');
             })
-            .catch(err => {
-                console.error(err);
-                pdfContainer.remove();
-                showStatus('❌ Error al generar', 'error');
+            .catch((error) => {
+                console.error('Error:', error);
+                if(pdfContainer.parentNode) document.body.removeChild(pdfContainer);
+                showStatus('❌ Error: ' + error.message, 'error');
             });
-    }, 500); // Un margen de 500ms es más seguro
+    }, 500); 
 }
 
         // Iniciar cuando cargue la página
@@ -217,3 +249,4 @@ Para dudas adicionales, contacte al equipo de soporte SAP.
 </body>
 
 </html>
+
